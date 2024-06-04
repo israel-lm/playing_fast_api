@@ -14,7 +14,18 @@ db = mongo_client[DB_NAME]
 
 
 @app.get("/courses")
-async def get_courses(sort_by: str = "date", domain: str = None):
+async def get_courses(sort_by: str = "date", domain: str = None) -> list:
+    """
+    Retrieves all courses in the database.
+
+    Args:
+        sort_by: The field to sort by.
+        domain: Course domain, if any.
+
+    Returns:
+        List of courses.
+    """
+    
     cursor = db.courses.find()
     async for course in cursor:
         total = 0
@@ -52,7 +63,17 @@ async def get_courses(sort_by: str = "date", domain: str = None):
 
 
 @app.get("/courses/{course_name}")
-async def get_course(course_name: str):
+async def get_course(course_name: str) -> dict:
+    """
+    Get details about a specific course.
+
+    Args:
+        course_name: Name of the course to get details about.
+
+    Returns:
+        Dictionary containing course information.
+    """
+    
     course = await find_course(course_name)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found.")
@@ -64,7 +85,18 @@ async def get_course(course_name: str):
     return course
 
 @app.get("/courses/{course_name}/{chapter_id}")
-async def get_chapter(course_name: str, chapter_id: str):
+async def get_chapter(course_name: str, chapter_id: str) -> dict:
+    """
+    Get information about a chapter of a course.
+
+    Args:
+        course_name: Name of the course.
+        chapter_id: Index identifying the chapter.
+
+    Returns:
+        Dictionary with chapter information.
+    """
+    
     chapter = await find_chapter(course_name, chapter_id)
     if chapter:
         return chapter
@@ -72,7 +104,22 @@ async def get_chapter(course_name: str, chapter_id: str):
         raise HTTPException(status_code=404, detail="Chapter not found.")
 
 @app.post("/courses/{course_name}/{chapter_id}")
-async def rate_chapter(course_name: str, chapter_id: str, rating: int = Query(..., gt=-2, lt=2)):
+async def rate_chapter(course_name: str, chapter_id: str, rating: int = Query(..., gt=-2, lt=2)) -> list:
+    """
+    Update the rating of a chapter.
+
+    Args:
+        course_name: Name of the course.
+        chapter_id: Index identifying the chapter.
+        rating: 1 for a good rating, -1 for a bad rating.
+
+    Raises:
+        HTTPException: _description_
+
+    Returns:
+        Update list of chapters.
+    """
+    
     chapters = await find_chapters(course_name)
     
     try:
@@ -87,7 +134,6 @@ async def rate_chapter(course_name: str, chapter_id: str, rating: int = Query(..
         chapter["rating"] = {"total": rating, "count": 1}
     
     await db.courses.update_one({"name": course_name}, {"$set": {"chapters": chapters}})
-    
     return chapters
 
 
