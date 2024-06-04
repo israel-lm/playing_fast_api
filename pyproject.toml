@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "playing-fast-api"
+version = "0.1.0"
+description = ""
+authors = ["Israel Marinho <ilm.eletrica@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.111.0"
+uvicorn = "^0.30.0"
+starlette = "^0.37.2"
+pydantic = "^2.7.2"
+motor = "^3.4.0"
+pymongo = "^4.7.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
