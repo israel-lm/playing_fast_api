@@ -64,16 +64,16 @@ async def get_course(course_name: str):
     return course
 
 @app.get("/courses/{course_name}/{chapter_id}")
-def get_chapter(course_name: str, chapter_id: str):
-    chapter = find_chapter(course_name, chapter_id)
+async def get_chapter(course_name: str, chapter_id: str):
+    chapter = await find_chapter(course_name, chapter_id)
     if chapter:
         return chapter
     else:
         raise HTTPException(status_code=404, detail="Chapter not found.")
 
 @app.post("/courses/{course_name}/{chapter_id}")
-def rate_chapter(course_name: str, chapter_id: str, rating: int = Query(..., gt=-2, lt=2)):
-    chapters = find_chapters(course_name)
+async def rate_chapter(course_name: str, chapter_id: str, rating: int = Query(..., gt=-2, lt=2)):
+    chapters = await find_chapters(course_name)
     
     try:
         chapter = chapters[int(chapter_id)]
@@ -85,7 +85,9 @@ def rate_chapter(course_name: str, chapter_id: str, rating: int = Query(..., gt=
         chapter["rating"]["count"] += 1
     except KeyError:
         chapter["rating"] = {"total": rating, "count": 1}
-    db.courses.update_one({"name": course_name}, {"$set": {"chapters": chapters}})
+    
+    await db.courses.update_one({"name": course_name}, {"$set": {"chapters": chapters}})
+    
     return chapters
 
 
@@ -94,16 +96,16 @@ def rate_chapter(course_name: str, chapter_id: str, rating: int = Query(..., gt=
 async def find_course(course_name: str, include_chapter: bool = False):
     return await db.courses.find_one({"name": course_name}, {"_id": False, "chapters": include_chapter})
 
-def find_chapters(course_name: str):
-    course = find_course(course_name, True)
+async def find_chapters(course_name: str):
+    course = await find_course(course_name, True)
     if course:
         chapters = course.get('chapters')
     else:
         chapters = None
     return chapters
 
-def find_chapter(course_name: str, chapter_id: str):
-    chapters = find_chapters(course_name)
+async def find_chapter(course_name: str, chapter_id: str):
+    chapters = await find_chapters(course_name)
     if chapters:
         try:
             chapter = chapters[int(chapter_id)]
