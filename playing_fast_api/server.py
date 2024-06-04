@@ -52,8 +52,8 @@ async def get_courses(sort_by: str = "date", domain: str = None):
 
 
 @app.get("/courses/{course_name}")
-def get_course(course_name: str):
-    course = find_course(course_name)
+async def get_course(course_name: str):
+    course = await find_course(course_name)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found.")
     
@@ -89,10 +89,10 @@ def rate_chapter(course_name: str, chapter_id: str, rating: int = Query(..., gt=
     return chapters
 
 
-# Helper functions below
+#### Helper functions below ####
 
-def find_course(course_name: str, include_chapter: bool = False):
-    return db.courses.find_one({"name": course_name}, {"_id": False, "chapters": include_chapter})
+async def find_course(course_name: str, include_chapter: bool = False):
+    return await db.courses.find_one({"name": course_name}, {"_id": False, "chapters": include_chapter})
 
 def find_chapters(course_name: str):
     course = find_course(course_name, True)
